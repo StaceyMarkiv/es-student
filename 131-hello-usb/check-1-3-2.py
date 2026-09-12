@@ -37,7 +37,7 @@ def listen(board):
 
 
 def write_log(board, lines):
-    with open(LOG_NAME, "w", encoding="utf-8") as log:
+    with open(LOG_NAME, "w", encoding="utf-8", newline='\n') as log:
         log.write("задание: " + TASK + "\n")
         log.write("проект: " + PROJECT + "\n")
         log.write("устройство: %04x:%04x\n" % (board.vid, board.pid))
