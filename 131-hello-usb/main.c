@@ -3,7 +3,7 @@
 
 int main()
 {
-    stdio_init_all();
+    stdio_init_all();       // обязательно для работы com-порта
 
     while (1) {
         printf("Hello, world!\n");
