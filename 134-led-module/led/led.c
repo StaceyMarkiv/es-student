@@ -3,21 +3,20 @@
 
 const uint LED_PIN = 16;
 
-static bool led_state = false;
+static bool led_state = true;
 
 void led_init(void)
 {
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
-    led_set(false);
+    led_set(led_state);
 }
 
 void led_set(bool on)
 {
     led_state = on;
     gpio_put(LED_PIN, led_state);
-
 }
 
 void led_toggle(void)

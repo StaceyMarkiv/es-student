@@ -11,11 +11,13 @@ pico_sdk_init()
 
 add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/led/led.c   # подключение модуля управления светодиодом
+    ${CMAKE_CURRENT_SOURCE_DIR}/led/led.c       # подключение модуля управления светодиодом
+    ${CMAKE_CURRENT_SOURCE_DIR}/logging/log.c   # подключение модуля журнала
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/led         # подключение заголовочных файлов
+    ${CMAKE_CURRENT_SOURCE_DIR}/led             # подключение заголовочных файлов модуля управления светодиодом
+    ${CMAKE_CURRENT_SOURCE_DIR}/logging         # подключение заголовочных файлов модуля журнала
 )
 
 target_link_libraries(${PROJECT_NAME}
