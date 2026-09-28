@@ -1,9 +1,96 @@
-#include "memory.h"
-
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include "hardware/regs/addressmap.h"
 #include "pico/stdlib.h"
+
+#include "memory.h"
+#include "device.h"
+#include "command.h"
+
+int main(void);
+
+uint32_t data_variable = 100;
+uint32_t bss_variable;
+
+// печать строки данных для функции
+static void fw_row_func(const char *obj_name, uintptr_t address)
+{
+    // адрес функции со сброшенным признаком Thumb
+    uint16_t *addr = (uint16_t *)(address & ~1u);
+
+    printf("%-15s 0x%08x 0x%04x\n",
+           obj_name, (unsigned)address, *(uint16_t *)addr);
+}
+
+// печать строки данных для структуры
+static void fw_row_struct(const char *obj_name, uintptr_t address, bool is_struct_item)
+{
+    printf(is_struct_item ? "- %-13s 0x%08x\n" : "%-15s 0x%08x\n",
+           obj_name, (unsigned)address);
+}
+
+// печать строки данных для переменной
+static void fw_row_var(const char *obj_name, uintptr_t address)
+{
+    printf("%-15s 0x%08x %u\n",
+           obj_name, (unsigned)address, (unsigned)*(uint32_t *)address);
+}
+
+// печать строки данных для константы
+static void fw_row_const(const char *obj_name, uintptr_t address)
+{
+    printf("%-15s 0x%08x %s\n",
+           obj_name, (unsigned)address, (char *)address);
+}
+
+void fw_info(void)
+{
+    // считаем вызов: data_variable и bss_variable на единицу больше
+    data_variable++;
+    bss_variable++;
+
+    // адреса функций со сброшенным признаком Thumb
+    uint16_t *main_code = (uint16_t *)((uintptr_t)main & ~1u);
+
+    // локальная переменная и блок из кучи
+    uint32_t stack_variable = 1946;
+
+    uint32_t *heap_variable = malloc(sizeof(uint32_t));
+    if (heap_variable != NULL)
+    {
+        *heap_variable = 1951;
+    }
+
+    // шапка: объект, адрес, значение
+    printf("%-15s %-10s %s\n", "object", "address", "value");
+
+    // main, fw_info  — адрес с признаком Thumb и два байта по сброшенному адресу
+    fw_row_func("main", (uintptr_t)main);
+    fw_row_func("fw_info", (uintptr_t)fw_info);
+    // commands       — адрес массива
+    fw_row_struct("commands", (uintptr_t)&commands, false);
+    // обработчики    — имя команды и адрес обработчика, строкой на команду
+    for (uint i = 0; i < command_count; i++)
+    {
+        fw_row_struct(commands[i].name, (uintptr_t)commands[i].handler, true);
+    }
+    // константы      — адрес и значение строк паспорта из device.h
+    fw_row_const("DEVICE_PROJECT", (uintptr_t)DEVICE_PROJECT); // wrong
+    fw_row_const("DEVICE_BOARD", (uintptr_t)DEVICE_BOARD);     // wrong
+    // data_variable  — адрес и значение, секция .data
+    fw_row_var("data_variable", (uintptr_t)&data_variable);
+    // bss_variable   — адрес и значение, секция .bss
+    fw_row_var("bss_variable", (uintptr_t)&bss_variable);
+    // stack_variable — адрес и значение
+    fw_row_var("stack_variable", (uintptr_t)&stack_variable);
+    // heap_variable  — адрес и значение
+    fw_row_var("heap_variable", (uintptr_t)heap_variable); // wrong
+
+    // возвращаем блок кучи
+    free(heap_variable);
+}
 
 extern char __flash_binary_start;
 extern char __flash_binary_end;

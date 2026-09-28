@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}                     # подключение заголовочных файлов в основной папке проекта
     ${CMAKE_CURRENT_SOURCE_DIR}/led                 # подключение заголовочных файлов модуля управления светодиодом
     ${CMAKE_CURRENT_SOURCE_DIR}/logging             # подключение заголовочных файлов модуля журнала
     ${CMAKE_CURRENT_SOURCE_DIR}/device              # подключение заголовочных файлов модуля паспорта устройства
