@@ -22,4 +22,4 @@ struct info_t
     uint8_t revision;
 };
 
-extern const struct info_t device_card;
+extern struct info_t device_card;
