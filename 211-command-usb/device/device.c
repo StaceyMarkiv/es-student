@@ -7,10 +7,10 @@
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/sysinfo.h"
 
-const struct info_t device_card = {
+struct info_t device_card = {
     .version = 0x00010000,
     .name = DEVICE_NAME,
-    .revision = 2,
+    .revision = 0,
 };
 
 void device_info(void)
@@ -35,10 +35,10 @@ void device_info(void)
 
 void dev_info(void)
 {
-    //     volatile uint32_t *chip_id = (uint32_t *)(SYSINFO_BASE + SYSINFO_CHIP_ID_OFFSET);
-    //     uint32_t id = *chip_id;
-    //     uint32_t revision = (id & SYSINFO_CHIP_ID_REVISION_BITS) >> SYSINFO_CHIP_ID_REVISION_LSB;
-    //     device_card.revision = revision;
+    volatile uint32_t *chip_id = (uint32_t *)(SYSINFO_BASE + SYSINFO_CHIP_ID_OFFSET);
+    uint32_t id = *chip_id;
+    uint32_t revision = (id & SYSINFO_CHIP_ID_REVISION_BITS) >> SYSINFO_CHIP_ID_REVISION_LSB;
+    device_card.revision = revision;
 
     // шапка: структура, адрес, размер, сдвиг, значение
     printf("%-15s %-10s %-5s %-6s %s\n", "struct", "address", "size", "offset", "value");
