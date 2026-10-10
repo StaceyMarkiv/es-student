@@ -43,7 +43,7 @@ def talk(board):
 
 
 def write_log(board, exchange):
-    with open(LOG_NAME, "w", encoding="utf-8") as log:
+    with open(LOG_NAME, "w", encoding="utf-8", newline="\n") as log:         # newline="\n" нужно для того, чтобы все окончания строк были LF
         log.write("задание: " + TASK + "\n")
         log.write("проект: " + PROJECT + "\n")
         log.write("устройство: %04x:%04x\n" % (board.vid, board.pid))
