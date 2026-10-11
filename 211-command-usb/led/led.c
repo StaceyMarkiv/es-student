@@ -3,7 +3,7 @@
 
 const uint LED_PIN = 16;
 
-static bool led_state = false;
+static bool led_state = true;
 
 void led_init(void)
 {

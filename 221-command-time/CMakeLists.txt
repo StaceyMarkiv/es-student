@@ -5,7 +5,7 @@ set(PICO_PLATFORM rp2040)
 
 include(pico_sdk_import.cmake)
 
-project(211_command_usb)
+project(221_command_time)
 
 pico_sdk_init()
 
@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/logging/log.c       # подключение модуля журнала
     ${CMAKE_CURRENT_SOURCE_DIR}/device/device.c     # подключение модуля паспорта устройства
     ${CMAKE_CURRENT_SOURCE_DIR}/memory/memory.c     # подключение модуля памяти
+    ${CMAKE_CURRENT_SOURCE_DIR}/clock/clock.c       # подключение модуля времени
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -23,6 +24,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/logging             # подключение заголовочных файлов модуля журнала
     ${CMAKE_CURRENT_SOURCE_DIR}/device              # подключение заголовочных файлов модуля паспорта устройства
     ${CMAKE_CURRENT_SOURCE_DIR}/memory              # подключение заголовочных файлов модуля памяти
+    ${CMAKE_CURRENT_SOURCE_DIR}/clock               # подключение заголовочных файлов модуля времени
 )
 
 target_link_libraries(${PROJECT_NAME}
