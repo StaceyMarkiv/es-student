@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h> //нужно для memset
 
 #include "pico/stdlib.h"
 #include "stdio-text-protocol.h"
@@ -11,7 +12,7 @@ void stdio_text_protocol_init(void)
     line_length = 0;
 }
 
-command_t command;
+static command_t command;
 const command_t *stdio_text_protocol_handle(void)
 {
     // читаем символ без ожидания; нет символа — возвращаем NULL
@@ -28,7 +29,14 @@ const command_t *stdio_text_protocol_handle(void)
         putchar('\n');
         line[line_length] = '\0';
 
+        if (command.truncated == true)
+        {
+            line_length = 0;
+            return &command;
+        }
+
         // делим строку на слова и возвращаем команду
+        memset(&command, 0, sizeof(command)); // обнуление всех полей структуры
         bool new_arg = true;
         command.argc = 0;
         for (uint32_t i = 0; i <= line_length; i++)
@@ -50,9 +58,7 @@ const command_t *stdio_text_protocol_handle(void)
             if (command.argc == 1)
             {
                 if (command.name == NULL)
-                {
                     command.name = &line[i];
-                }
             }
             else if (command.argc > 1 && command.argc <= STDIO_TEXT_PROTOCOL_MAX_ARGS + 1)
             {
@@ -87,6 +93,12 @@ const command_t *stdio_text_protocol_handle(void)
             putchar('\b');
         }
 
+        // снимаем пометку о переполнении
+        if (command.truncated == true)
+        {
+            command.truncated = false;
+        }
+
         return NULL;
     }
 
@@ -111,7 +123,6 @@ const command_t *stdio_text_protocol_handle(void)
     {
         // буфер полон — помечаем строку как переполненную
         command.truncated = true;
-        line_length = 0;
-        return &command;
+        return NULL;
     }
 }

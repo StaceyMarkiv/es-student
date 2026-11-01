@@ -10,6 +10,7 @@
 
 static uint32_t previous_us = 0;
 static uint32_t max_us = 0;
+static uint64_t avg_sum = 0;
 
 void profiling_init(void)
 {
