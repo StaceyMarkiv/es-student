@@ -4,6 +4,14 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 
+typedef enum
+{
+    RELEASED,
+    PRESSING,
+    PRESSSED,
+    RELEASING,
+} button_state_t;
+
 static const uint BUTTON_PIN = 15;
 static const uint DEBOUNCE_MS = 20 * 1000;
 
