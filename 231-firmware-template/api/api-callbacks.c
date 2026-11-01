@@ -1,13 +1,15 @@
-#include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "pico/stdlib.h"
+
 #include "api-commands.h"
+#include "button-task.h"
 #include "device.h"
-#include "profiling.h"
 #include "led-task.h"
+#include "profiling.h"
 
 // прикидка: за член ряда 4 операции с double, 175 + 110 + 190 + 110 = 585 тактов;
 // 1 000 000 членов по 585 тактов при 125 МГц — около 4,7 с
@@ -158,6 +160,11 @@ static void cmd_led_period(const command_t *command)
     }
 }
 
+static void cmd_button(const command_t *command)
+{
+    printf("button: %s, presses %u\n", button_task_is_pressed() ? "pressed" : "released", (unsigned)button_task_get_press_count());
+}
+
 const api_command_t api_commands[] = {
     {"info", "device passport", cmd_info},
     {"uptime", "time since reset", cmd_uptime},
@@ -168,6 +175,7 @@ const api_command_t api_commands[] = {
     {"led_disable", "disable led", cmd_led_disable},
     {"led_blink", "make led blink", cmd_led_blink},
     {"led_period", "set led blink period", cmd_led_period},
+    {"button", "show button state and button presses count", cmd_button},
 };
 
 const uint api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);

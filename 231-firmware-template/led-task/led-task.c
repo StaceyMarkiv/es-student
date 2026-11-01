@@ -111,3 +111,26 @@ uint32_t led_task_get_period_ms(void)
     uint64_t period_ms = half_period_us * 2 / 1000;
     return (uint32_t)period_ms;
 }
+
+void led_task_next_state(void)
+{
+    led_state_t next_state;
+
+    switch (led_task_get_state())
+    {
+    case LED_STATE_OFF:
+        next_state = LED_STATE_ON;
+        break;
+    case LED_STATE_ON:
+        next_state = LED_STATE_BLINK;
+        break;
+    case LED_STATE_BLINK:
+        next_state = LED_STATE_OFF;
+        break;
+    default:
+        next_state = LED_STATE_OFF;
+        break;
+    }
+
+    led_task_set_state(next_state);
+}

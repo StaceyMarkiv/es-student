@@ -6,7 +6,6 @@
 
 static void help(void)
 {
-    printf("help\n");
     printf("%-16s %s\n", "help", "list of commands");
 
     for (uint32_t i = 0; i < api_command_count; i++)

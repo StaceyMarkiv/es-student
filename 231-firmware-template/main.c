@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "pico/stdlib.h"
+#include "button-task.h"
 #include "led-task.h"
 #include "log.h"
 #include "device.h"
@@ -14,11 +15,13 @@ int main()
     profiling_init();
     stdio_text_protocol_init();
     led_task_init();
+    button_task_init();
 
     while (1)
     {
         profiling_iteration();
         led_task_handle();
+        button_task_handle();
 
         // принятая строка становится командой, команда — действием прибора
         const command_t *command = stdio_text_protocol_handle();
