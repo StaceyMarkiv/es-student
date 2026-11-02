@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/device/device.c                             # подключение модуля паспорта устройства
     ${CMAKE_CURRENT_SOURCE_DIR}/led-task/led-task.c                         # подключение модуля управления светодиодом
     ${CMAKE_CURRENT_SOURCE_DIR}/logging/log.c                               # подключение модуля журнала
+    ${CMAKE_CURRENT_SOURCE_DIR}/pi-task/pi-task.c                           # подключение модуля расчета ПИ
     ${CMAKE_CURRENT_SOURCE_DIR}/profiling/profiling.c                       # подключение модуля профилирования
     ${CMAKE_CURRENT_SOURCE_DIR}/stdio-text-protocol/stdio-text-protocol.c   # подключение модуля протокола
 )
@@ -30,6 +31,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/device                  # подключение заголовочных файлов модуля паспорта устройства
     ${CMAKE_CURRENT_SOURCE_DIR}/led-task                # подключение заголовочных файлов модуля управления светодиодом
     ${CMAKE_CURRENT_SOURCE_DIR}/logging                 # подключение заголовочных файлов модуля журнала
+    ${CMAKE_CURRENT_SOURCE_DIR}/pi-task                 # подключение заголовочных файлов модуля расчета ПИ
     ${CMAKE_CURRENT_SOURCE_DIR}/profiling               # подключение заголовочных файлов модуля профилирования
     ${CMAKE_CURRENT_SOURCE_DIR}/stdio-text-protocol     # подключение заголовочных файлов модуля протокола
 )

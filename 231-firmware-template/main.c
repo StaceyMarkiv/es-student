@@ -6,6 +6,7 @@
 #include "log.h"
 #include "device.h"
 #include "profiling.h"
+#include "pi-task.h"
 #include "stdio-text-protocol.h"
 #include "api.h"
 
@@ -22,6 +23,7 @@ int main()
         profiling_iteration();
         led_task_handle();
         button_task_handle();
+        pi_task_handle();
 
         // принятая строка становится командой, команда — действием прибора
         const command_t *command = stdio_text_protocol_handle();
