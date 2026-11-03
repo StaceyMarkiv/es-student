@@ -1,48 +1,55 @@
 #include "pico/stdlib.h"
-
 #include "profiling.h"
 
-// итерация около 2 мкс, за секунду их около 500 000;
-// ближайшая степень двойки 2^19 = 524 288, среднее помнит около секунды
-#define AVG_SHIFT 19
-// замер в 1/256 долях микросекунды, чтобы среднее не теряло дробную часть
-#define FRACTION_SHIFT 8
+#include <stdio.h>
 
-static uint32_t previous_us = 0;
-static uint32_t max_us = 0;
-static uint64_t avg_sum = 0;
+profiling_result_t stopwatches[STOPWATCH_QTY];
 
-void profiling_init(void)
+void profiling_stopwatch_init(uint32_t id, const char *name)
 {
-    previous_us = time_us_32();
+    stopwatches[id].name = (char *)name;
+    stopwatches[id].count = 0;
+    stopwatches[id].avg_sum = 0;
+    stopwatches[id].max_us = 0;
+    stopwatches[id].start_us = 0;
 }
 
-void profiling_iteration(void)
+void profiling_start(uint32_t id)
+{
+    stopwatches[id].count++;
+    stopwatches[id].start_us = time_us_32();
+}
+
+void profiling_stop(uint32_t id)
 {
     uint32_t now_us = time_us_32();
-    uint32_t iteration_us = now_us - previous_us;
-    previous_us = now_us;
+    uint32_t iteration_us = now_us - stopwatches[id].start_us;
 
-    if (iteration_us > max_us)
+    if (iteration_us > stopwatches[id].max_us)
+        stopwatches[id].max_us = iteration_us;
+
+    double new_avg = (stopwatches[id].avg_sum * (stopwatches[id].count - 1) + iteration_us) / stopwatches[id].count;
+    stopwatches[id].avg_sum = new_avg;
+}
+
+bool profiling_get(uint32_t id, profiling_result_t *result)
+{
+    profiling_result_t stopwatch = stopwatches[id];
+    if (stopwatch.name == NULL)
+        // секундомер с таким номером не заведён
+        return false;
+
+    *result = stopwatch;
+    return true;
+}
+
+void profiling_reset(void)
+{
+    for (uint32_t id = 0; id < STOPWATCH_QTY; id++)
     {
-        max_us = iteration_us;
+        stopwatches[id].count = 0;
+        stopwatches[id].avg_sum = 0;
+        stopwatches[id].max_us = 0;
+        stopwatches[id].start_us = 0;
     }
-
-    // обновление среднего
-    avg_sum = avg_sum - (avg_sum >> AVG_SHIFT) + ((uint64_t)iteration_us << FRACTION_SHIFT);
-}
-
-float profiling_avg_us(void)
-{
-    return (float)(avg_sum >> AVG_SHIFT) / (1 << FRACTION_SHIFT);
-}
-
-uint32_t profiling_max_us(void)
-{
-    return max_us;
-}
-
-void profiling_reset_max(void)
-{
-    max_us = 0;
 }
