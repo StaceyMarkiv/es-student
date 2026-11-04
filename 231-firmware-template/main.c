@@ -9,7 +9,7 @@
 #include "pi-task.h"
 #include "logging/log.h"
 #include "profiling/profiling.h"
-#include "stdio_text_protocol/stdio-text-protocol.h"
+#include "stdio-text-protocol/stdio-text-protocol.h"
 
 enum stopwatch_t
 {

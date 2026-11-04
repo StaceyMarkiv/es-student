@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pico/types.h"
-#include "stdio_text_protocol/stdio-text-protocol.h"
+#include "stdio-text-protocol/stdio-text-protocol.h"
 
 // обработчик команды: получает имя и аргументы
 typedef void (*api_callback_t)(const command_t *command);
