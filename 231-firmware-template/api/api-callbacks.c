@@ -3,14 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "pico/stdlib.h"
-
 #include "api-commands.h"
 #include "button-task.h"
-#include "device.h"
+#include "firmware.h"
 #include "led-task.h"
 #include "pi-task.h"
-#include "profiling.h"
+#include "device/device.h"
+#include "profiling/profiling.h"
+#include "systime/systime.h"
 
 // прикидка: за член ряда 4 операции с double, 175 + 110 + 190 + 110 = 585 тактов;
 // 1 000 000 членов по 585 тактов при 125 МГц — около 4,7 с
@@ -50,10 +50,10 @@ static void cmd_info(const command_t *command)
     device_info_t info;
     device_get_info(&info);
 
-    printf("name: %s\n", DEVICE_NAME);
+    printf("name: %s\n", FIRMWARE_NAME);
     printf("version: %s\n", FIRMWARE_VERSION);
-    printf("project: %s\n", DEVICE_PROJECT);
-    printf("repo: %s\n", DEVICE_REPO);
+    printf("project: %s\n", FIRMWARE_PROJECT);
+    printf("repo: %s\n", FIRMWARE_REPO);
     printf("board: %s\n", info.board);
     printf("serial: %s\n", info.serial);
     printf("chip: manufacturer 0x%03x, part 0x%04x, revision %u\n", (unsigned)info.manufacturer, (unsigned)info.part, (unsigned)info.revision);
@@ -62,7 +62,7 @@ static void cmd_info(const command_t *command)
 
 static void cmd_uptime(const command_t *command)
 {
-    printf("uptime: %llu ms\n", time_us_64() / 1000);
+    printf("uptime: %llu ms\n", systime_ms());
 }
 
 static void cmd_pi_start(const command_t *command)
@@ -171,12 +171,24 @@ static void cmd_button(const command_t *command)
 
 static void cmd_profiling(const command_t *command)
 {
+    if (PROFILING_ENABLED == 0)
+    {
+        printf("profiling is disabled in this build\n");
+        return;
+    }
+
     for (uint32_t id = 0; id < STOPWATCH_QTY; id++)
     {
         profiling_result_t stopwatch;
         bool exists = profiling_get(id, &stopwatch);
         if (exists != false)
-            printf("%-11s count %-11u mean %-5.2f us  max %d us\n", stopwatch.name, (unsigned)stopwatch.count, stopwatch.avg_sum, (unsigned)stopwatch.max_us);
+        {
+            printf("%-11s count %-11u mean %-5.2f us  max %d us\n", stopwatch.name, (unsigned)stopwatch.count, ((double)stopwatch.avg_sum / stopwatch.count), (unsigned)stopwatch.max_us);
+        }
+        else
+        {
+            printf("no stopwatch with id %d\n", (unsigned)id);
+        }
     }
 }
 

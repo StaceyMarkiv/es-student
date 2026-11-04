@@ -1,5 +1,5 @@
 #pragma once
 
-#include "stdio-text-protocol.h"
+#include "stdio_text_protocol/stdio-text-protocol.h"
 
 void api_handle(const command_t *command);

@@ -2,7 +2,7 @@
 #include <string.h> //нужно для memset
 
 #include "pico/stdlib.h"
-#include "stdio-text-protocol.h"
+#include "stdio_text_protocol/stdio-text-protocol.h"
 
 static char line[STDIO_TEXT_PROTOCOL_LINE_SIZE];
 static uint line_length;

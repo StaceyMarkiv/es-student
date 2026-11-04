@@ -4,12 +4,12 @@
 
 #include "api.h"
 #include "button-task.h"
-#include "device.h"
+#include "firmware.h"
 #include "led-task.h"
-#include "log.h"
 #include "pi-task.h"
-#include "profiling.h"
-#include "stdio-text-protocol.h"
+#include "logging/log.h"
+#include "profiling/profiling.h"
+#include "stdio_text_protocol/stdio-text-protocol.h"
 
 enum stopwatch_t
 {
@@ -34,7 +34,7 @@ int main()
     led_task_init();
     button_task_init();
 
-    LOG_INF("%s %s\n", DEVICE_NAME, FIRMWARE_VERSION);
+    LOG_INF("%s %s\n", FIRMWARE_NAME, FIRMWARE_VERSION);
 
     while (1)
     {

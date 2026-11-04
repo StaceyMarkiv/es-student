@@ -1,5 +1,5 @@
-#include "pico/stdlib.h"
 #include "pi-task.h"
+#include "systime/systime.h"
 
 // Состояние расчёта: должно пережить возврат из обработчика
 static pi_state_t pi_state = NOT_STARTED;
@@ -26,7 +26,7 @@ bool pi_task_start(uint32_t n)
     pi_sign = 1.0;
 
     pi_state = RUNNING;
-    start_us = time_us_64();
+    start_us = systime_us();
 
     return true;
 }
@@ -55,7 +55,7 @@ void pi_task_handle(void)
         pi_result = 4.0 * pi_sum;
         pi_state = READY;
 
-        spent_us = time_us_64() - start_us;
+        spent_us = systime_us() - start_us;
     }
 }
 

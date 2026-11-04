@@ -1,5 +1,6 @@
 #include "button-task.h"
 #include "led-task.h"
+#include "systime/systime.h"
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -35,7 +36,7 @@ void button_task_handle(void)
     // читаем уровень: нажатая кнопка замыкает вывод на землю и даёт ноль
     bool button_pressed = !gpio_get(BUTTON_PIN);
     // читаем часы
-    uint64_t now_us = time_us_64();
+    uint64_t now_us = systime_us();
 
     // переходы по таблице
     switch (button_state)

@@ -3,12 +3,6 @@
 #include <stdint.h>
 #include "pico/unique_id.h"
 
-#define DEVICE_NAME "es-firmware-template"
-#define FIRMWARE_VERSION "1.2.0"
-
-#define DEVICE_PROJECT "231-firmware-template"
-#define DEVICE_REPO "https://github.com/StaceyMarkiv/es-student"
-
 #ifndef DEVICE_BOARD
 #define DEVICE_BOARD "unknown"
 #endif

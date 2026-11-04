@@ -13,36 +13,35 @@ add_compile_options(-Wall)
 
 add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/api/api.c                                   # подключение модуля API
-    ${CMAKE_CURRENT_SOURCE_DIR}/api/api-callbacks.c                         # подключение внутренних функций модуля API
-    ${CMAKE_CURRENT_SOURCE_DIR}/button-task/button-task.c                   # подключение модуля кнопки
-    ${CMAKE_CURRENT_SOURCE_DIR}/device/device.c                             # подключение модуля паспорта устройства
-    ${CMAKE_CURRENT_SOURCE_DIR}/led-task/led-task.c                         # подключение модуля управления светодиодом
-    ${CMAKE_CURRENT_SOURCE_DIR}/logging/log.c                               # подключение модуля журнала
-    ${CMAKE_CURRENT_SOURCE_DIR}/pi-task/pi-task.c                           # подключение модуля расчета ПИ
-    ${CMAKE_CURRENT_SOURCE_DIR}/profiling/profiling.c                       # подключение модуля профилирования
-    ${CMAKE_CURRENT_SOURCE_DIR}/stdio-text-protocol/stdio-text-protocol.c   # подключение модуля протокола
+    ${CMAKE_CURRENT_SOURCE_DIR}/api/api.c                   # подключение модуля API
+    ${CMAKE_CURRENT_SOURCE_DIR}/api/api-callbacks.c         # подключение внутренних функций модуля API
+    ${CMAKE_CURRENT_SOURCE_DIR}/button-task/button-task.c   # подключение модуля кнопки
+    ${CMAKE_CURRENT_SOURCE_DIR}/led-task/led-task.c         # подключение модуля управления светодиодом
+    ${CMAKE_CURRENT_SOURCE_DIR}/pi-task/pi-task.c           # подключение модуля расчета ПИ
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}                         # подключение заголовочных файлов в основной папке проекта
-    ${CMAKE_CURRENT_SOURCE_DIR}/api                     # подключение заголовочных файлов модуля API
-    ${CMAKE_CURRENT_SOURCE_DIR}/button-task             # подключение заголовочных файлов модуля кнопки
-    ${CMAKE_CURRENT_SOURCE_DIR}/device                  # подключение заголовочных файлов модуля паспорта устройства
-    ${CMAKE_CURRENT_SOURCE_DIR}/led-task                # подключение заголовочных файлов модуля управления светодиодом
-    ${CMAKE_CURRENT_SOURCE_DIR}/logging                 # подключение заголовочных файлов модуля журнала
-    ${CMAKE_CURRENT_SOURCE_DIR}/pi-task                 # подключение заголовочных файлов модуля расчета ПИ
-    ${CMAKE_CURRENT_SOURCE_DIR}/profiling               # подключение заголовочных файлов модуля профилирования
-    ${CMAKE_CURRENT_SOURCE_DIR}/stdio-text-protocol     # подключение заголовочных файлов модуля протокола
+    ${CMAKE_CURRENT_SOURCE_DIR}                 # подключение заголовочных файлов в основной папке проекта
+    ${CMAKE_CURRENT_SOURCE_DIR}/api             # подключение заголовочных файлов модуля API
+    ${CMAKE_CURRENT_SOURCE_DIR}/button-task     # подключение заголовочных файлов модуля кнопки
+    ${CMAKE_CURRENT_SOURCE_DIR}/led-task        # подключение заголовочных файлов модуля управления светодиодом
+    ${CMAKE_CURRENT_SOURCE_DIR}/pi-task         # подключение заголовочных файлов модуля расчета ПИ
 )
 
 target_link_libraries(${PROJECT_NAME}
     pico_stdlib
-    pico_unique_id
+    device                  # подключение библиотеки паспорта устройства
+    logging                 # подключение библиотеки журнала
+    profiling               # подключение библиотеки профилирования
+    stdio_text_protocol     # подключение библиотеки протокола
+    systime                 # подключение библиотеки работы со временем
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    DEVICE_BOARD="${PICO_BOARD}"
+add_subdirectory(../libs ${CMAKE_BINARY_DIR}/libs)      # подключение папок библиотеки
+
+# выключатель профилирования: 0 — вызовов секундомеров в образе нет
+target_compile_definitions(profiling PUBLIC
+    PROFILING_ENABLED=0
 )
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)    # направляет поток вывода в USB
