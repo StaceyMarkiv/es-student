@@ -6,6 +6,7 @@
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/sysinfo.h"
 
+static char board_id[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
 void device_get_info(device_info_t *info)
 {
        volatile uint32_t *chip_id = (uint32_t *)(SYSINFO_BASE + SYSINFO_CHIP_ID_OFFSET);
@@ -16,5 +17,7 @@ void device_get_info(device_info_t *info)
        info->part = (id & SYSINFO_CHIP_ID_PART_BITS) >> SYSINFO_CHIP_ID_PART_LSB;
        info->pico_sdk = PICO_SDK_VERSION_STRING;
        info->revision = (id & SYSINFO_CHIP_ID_REVISION_BITS) >> SYSINFO_CHIP_ID_REVISION_LSB;
-       pico_get_unique_board_id_string(info->serial, sizeof(info->serial));
+
+       pico_get_unique_board_id_string(board_id, sizeof(board_id));
+       info->serial = board_id;
 }

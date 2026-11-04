@@ -41,7 +41,7 @@ add_subdirectory(../libs ${CMAKE_BINARY_DIR}/libs)      # подключение
 
 # выключатель профилирования: 0 — вызовов секундомеров в образе нет
 target_compile_definitions(profiling PUBLIC
-    PROFILING_ENABLED=0
+    PROFILING_ENABLED=1
 )
 
 pico_enable_stdio_usb(${PROJECT_NAME} 1)    # направляет поток вывода в USB

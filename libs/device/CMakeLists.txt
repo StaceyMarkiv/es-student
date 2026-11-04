@@ -7,9 +7,10 @@ target_include_directories(device PUBLIC
 )
 
 target_link_libraries(device PRIVATE
+    pico_stdlib
     pico_unique_id
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+target_compile_definitions(device PRIVATE
     DEVICE_BOARD="${PICO_BOARD}"
 )
