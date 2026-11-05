@@ -190,13 +190,14 @@ static void cmd_led_period(const command_t *command)
     }
     else
     {
-        const char *terms_err;
-        if (command->argc > 2)
-            terms_err = "args > 2";
-        else
-            terms_err = command->argv[0];
+        // const char *terms_err;
+        // if (command->argc > 2)
+        //     terms_err = "args > 2";
+        // else
+        //     terms_err = command->argv[0];
 
-        printf("error: usage led_period %s\n", terms_err);
+        // printf("error: usage led_period %s\n", terms_err);
+        printf("error: usage led_period <period_ms>\n");
     }
 }
 
@@ -219,13 +220,14 @@ static void cmd_profiling(const command_t *command)
         bool exists = profiling_get(id, &stopwatch);
         if (exists != false)
         {
-            printf("%-11s count %-11u mean %-5.2f us  max %d us\n", stopwatch.name, (unsigned)stopwatch.count, ((double)stopwatch.avg_sum / stopwatch.count), (unsigned)stopwatch.max_us);
+            printf("%-11s count %-11u mean %.2f us max %d us\n", stopwatch.name, (unsigned)stopwatch.count, ((double)stopwatch.avg_sum / stopwatch.count), (unsigned)stopwatch.max_us);
         }
         else
         {
             printf("no stopwatch with id %d\n", (unsigned)id);
         }
     }
+    //<имя> SP {SP} count <число> SP {SP} mean <среднее> us SP {SP} max <максимум> us
 }
 
 static void cmd_profiling_reset(const command_t *command)
