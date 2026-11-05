@@ -71,8 +71,10 @@ static void cmd_pi_start(const command_t *command)
     bool isNumber = true;
     if (command->argc == 1)
         members_qty = CALC_PI_TERMS;
-    else
+    else if (command->argc == 2)
         isNumber = parse_u32(command->argv[0], &members_qty);
+    else
+        isNumber = false;
 
     if (isNumber)
     {
@@ -96,7 +98,13 @@ static void cmd_pi_start(const command_t *command)
     }
     else
     {
-        printf("error: usage pi_start[%s]\n", command->argv[0]);
+        const char *terms_err;
+        if (command->argc > 2)
+            terms_err = "args > 2";
+        else
+            terms_err = command->argv[0];
+
+        printf("error: usage pi_start[%s]\n", terms_err);
     }
 }
 
@@ -144,7 +152,12 @@ static void cmd_led_blink(const command_t *command)
 static void cmd_led_period(const command_t *command)
 {
     uint32_t period;
-    bool isNumber = parse_u32(command->argv[0], &period);
+    bool isNumber = true;
+
+    if (command->argc == 2)
+        isNumber = parse_u32(command->argv[0], &period);
+    else
+        isNumber = false;
 
     if (isNumber)
     {
@@ -160,7 +173,13 @@ static void cmd_led_period(const command_t *command)
     }
     else
     {
-        printf("error: usage led_period[%s]\n", command->argv[0]);
+        const char *terms_err;
+        if (command->argc > 2)
+            terms_err = "args > 2";
+        else
+            terms_err = command->argv[0];
+
+        printf("error: usage led_period %s\n", terms_err);
     }
 }
 

@@ -16,6 +16,9 @@ void stdio_text_protocol_init(void)
 static command_t command;
 const command_t *stdio_text_protocol_handle(void)
 {
+    if (line_length == 0)
+        memset(&command, 0, sizeof(command)); // обнуление всех полей структуры
+
     // читаем символ без ожидания; нет символа — возвращаем NULL
     int symbol = getchar_timeout_us(0);
     if (symbol == PICO_ERROR_TIMEOUT)
@@ -37,7 +40,6 @@ const command_t *stdio_text_protocol_handle(void)
         }
 
         // делим строку на слова и возвращаем команду
-        memset(&command, 0, sizeof(command)); // обнуление всех полей структуры
         bool new_arg = true;
         command.argc = 0;
         for (uint32_t i = 0; i <= line_length; i++)
