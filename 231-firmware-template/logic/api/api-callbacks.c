@@ -3,18 +3,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "api-commands.h"
-#include "button-task.h"
+#include "api/api-commands.h"
+#include "button-task/button-task.h"
 #include "firmware.h"
-#include "led-task.h"
-#include "pi-task.h"
+#include "led-task/led-task.h"
+#include "pi-task/pi-task.h"
 #include "device/device.h"
 #include "profiling/profiling.h"
 #include "systime/systime.h"
 
 // прикидка: за член ряда 4 операции с double, 175 + 110 + 190 + 110 = 585 тактов;
 // 1 000 000 членов по 585 тактов при 125 МГц — около 4,7 с
-static const uint CALC_PI_TERMS = 1000000;
+static const uint32_t CALC_PI_TERMS = 1000000;
 
 // Число без знака из десятичной записи. false — в записи не только цифры
 // или число не помещается в uint32_t.
@@ -211,4 +211,4 @@ const api_command_t api_commands[] = {
     {"profiling_reset", "reset all stopwatches", cmd_profiling_reset},
 };
 
-const uint api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
+const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);

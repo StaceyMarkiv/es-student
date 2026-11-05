@@ -1,3 +1,5 @@
+#pragma once
+
 #define FIRMWARE_NAME "es-firmware-template"
 #define FIRMWARE_VERSION "1.2.0"
 

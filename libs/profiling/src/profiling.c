@@ -1,6 +1,5 @@
-#include "pico/stdlib.h"
 #include "profiling/profiling.h"
-
+#include "pico/stdlib.h"
 #include <stdio.h>
 
 static profiling_result_t stopwatches[STOPWATCH_QTY];

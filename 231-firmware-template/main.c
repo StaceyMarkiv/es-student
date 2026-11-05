@@ -1,12 +1,13 @@
 #include <string.h>
 
-#include "pico/stdlib.h"
-
-#include "api.h"
-#include "button-task.h"
 #include "firmware.h"
-#include "led-task.h"
-#include "pi-task.h"
+
+#include "api/api.h"
+#include "button-task/button-task.h"
+#include "led-task/led-task.h"
+#include "pi-task/pi-task.h"
+#include "platform/platform.h"
+
 #include "logging/log.h"
 #include "profiling/profiling.h"
 #include "stdio-text-protocol/stdio-text-protocol.h"
@@ -22,7 +23,8 @@ enum stopwatch_t
 
 int main()
 {
-    stdio_init_all(); // обязательно для работы com-порта
+    platform_init();
+    LOG_INF("%s %s\n", FIRMWARE_NAME, FIRMWARE_VERSION);
 
     profiling_stopwatch_init(STOPWATCH_LOOP, "loop");
     profiling_stopwatch_init(STOPWATCH_COMMAND, "command");
@@ -32,9 +34,7 @@ int main()
 
     stdio_text_protocol_init();
     led_task_init();
-    button_task_init();
-
-    LOG_INF("%s %s\n", FIRMWARE_NAME, FIRMWARE_VERSION);
+    button_task_init(led_task_next_state);
 
     while (1)
     {

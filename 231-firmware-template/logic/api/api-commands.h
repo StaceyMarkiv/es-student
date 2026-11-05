@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pico/types.h"
 #include "stdio-text-protocol/stdio-text-protocol.h"
 
 // обработчик команды: получает имя и аргументы
@@ -15,4 +14,4 @@ typedef struct
 } api_command_t;
 
 extern const api_command_t api_commands[];
-extern const uint api_command_count;
+extern const uint32_t api_command_count;

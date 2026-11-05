@@ -11,21 +11,55 @@ pico_sdk_init()
 
 add_compile_options(-Wall)
 
+# железо прибора: единственное место проекта с SDK
+add_library(platform STATIC
+    platform/platform.c
+)
+# путь к заголовкам — папка проекта, platform подключает pico_stdlib как PRIVATE;
+# через этот путь logic находит и firmware.h
+target_include_directories(platform PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(platform PRIVATE
+    pico_stdlib
+)
+
+# логика прибора: задачи и команды, без SDK
+add_library(logic STATIC
+    # исходники api, led-task, button-task и pi-task
+    logic/api/api.c
+    logic/api/api-callbacks.c
+    logic/button-task/button-task.c
+    logic/led-task/led-task.c
+    logic/pi-task/pi-task.c
+)
+# путь к заголовкам — папка logic
+target_include_directories(logic PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    logic
+)
+# stdio_text_protocol — PUBLIC, остальные библиотеки — PRIVATE
+target_link_libraries(logic PUBLIC
+    stdio-text-protocol     # подключение библиотеки протокола (она нужна пользователям библиотеки, и те получают её вместе с библиотекой)
+)
+target_link_libraries(logic PRIVATE
+    device                  # подключение библиотеки паспорта устройства
+    logging                 # подключение библиотеки журнала
+    profiling               # подключение библиотеки профилирования
+    systime                 # подключение библиотеки работы со временем
+)
+
 add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/api/api.c                   # подключение модуля API
-    ${CMAKE_CURRENT_SOURCE_DIR}/api/api-callbacks.c         # подключение внутренних функций модуля API
-    ${CMAKE_CURRENT_SOURCE_DIR}/button-task/button-task.c   # подключение модуля кнопки
-    ${CMAKE_CURRENT_SOURCE_DIR}/led-task/led-task.c         # подключение модуля управления светодиодом
-    ${CMAKE_CURRENT_SOURCE_DIR}/pi-task/pi-task.c           # подключение модуля расчета ПИ
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}                 # подключение заголовочных файлов в основной папке проекта
-    ${CMAKE_CURRENT_SOURCE_DIR}/api             # подключение заголовочных файлов модуля API
-    ${CMAKE_CURRENT_SOURCE_DIR}/button-task     # подключение заголовочных файлов модуля кнопки
-    ${CMAKE_CURRENT_SOURCE_DIR}/led-task        # подключение заголовочных файлов модуля управления светодиодом
-    ${CMAKE_CURRENT_SOURCE_DIR}/pi-task         # подключение заголовочных файлов модуля расчета ПИ
+    # ${CMAKE_CURRENT_SOURCE_DIR}/api             # подключение заголовочных файлов модуля API
+    # ${CMAKE_CURRENT_SOURCE_DIR}/button-task     # подключение заголовочных файлов модуля кнопки
+    # ${CMAKE_CURRENT_SOURCE_DIR}/led-task        # подключение заголовочных файлов модуля управления светодиодом
+    # ${CMAKE_CURRENT_SOURCE_DIR}/pi-task         # подключение заголовочных файлов модуля расчета ПИ
+    # ${CMAKE_CURRENT_SOURCE_DIR}/platform        # подключение заголовочных файлов модуля управления железом
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -35,6 +69,8 @@ target_link_libraries(${PROJECT_NAME}
     profiling               # подключение библиотеки профилирования
     stdio-text-protocol     # подключение библиотеки протокола
     systime                 # подключение библиотеки работы со временем
+    platform
+    logic
 )
 
 add_subdirectory(../libs ${CMAKE_BINARY_DIR}/libs)      # подключение папок библиотеки

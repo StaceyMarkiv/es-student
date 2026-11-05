@@ -1,5 +1,5 @@
-#include "pico/stdlib.h"
 #include "systime/systime.h"
+#include "pico/stdlib.h"
 
 uint64_t systime_us(void)
 {

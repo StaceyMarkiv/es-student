@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-// #include "pico/unique_id.h"
 
 #ifndef DEVICE_BOARD
 #define DEVICE_BOARD "unknown"

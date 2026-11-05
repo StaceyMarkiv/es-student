@@ -1,31 +1,15 @@
-#include "led-task.h"
+#include "led-task/led-task.h"
+#include "platform/platform.h"
 #include "systime/systime.h"
-#include "hardware/gpio.h"
 
 // Состояние задачи: внутреннее связывание, только для этого файла
 static led_state_t led_state;
 static uint64_t half_period_us;
 static uint64_t last_toggle_us;
 
-static const uint LED_PIN = 16;
-
-// Вспомогательная функция: из других файлов её не вызвать
-static void led_set(bool on)
-{
-    gpio_put(LED_PIN, on);
-}
-
-static bool led_get(void)
-{
-    return gpio_get(LED_PIN);
-}
-
 void led_task_init(void)
 {
-    // настраиваем вывод светодиода, период 1000 мс, состояние «мигает»
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
-
+    // период 1000 мс, состояние «мигает»
     half_period_us = 500000;
     led_state = LED_STATE_BLINK;
     last_toggle_us = 0;
@@ -43,7 +27,7 @@ void led_task_handle(void)
         // «мигает» — каждые полпериода переключаем светодиод
         if (systime_period_elapsed(&last_toggle_us, half_period_us))
         {
-            led_set(!led_get());
+            platform_led_set(!platform_led_get());
         }
         break;
     }
@@ -59,10 +43,10 @@ void led_task_set_state(led_state_t state)
     switch (led_state)
     {
     case LED_STATE_OFF:
-        led_set(false);
+        platform_led_set(false);
         break;
     case LED_STATE_ON:
-        led_set(true);
+        platform_led_set(true);
         break;
     case LED_STATE_BLINK:
         last_toggle_us = 0;
