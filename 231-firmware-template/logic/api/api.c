@@ -1,8 +1,8 @@
+#include "api/api.h"
+#include "api/api-commands.h"
+
 #include <stdio.h>
 #include <string.h>
-
-#include "api/api-commands.h"
-#include "api/api.h"
 
 static void help(void)
 {
