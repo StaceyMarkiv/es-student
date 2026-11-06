@@ -55,11 +55,6 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}                 # подключение заголовочных файлов в основной папке проекта
-    # ${CMAKE_CURRENT_SOURCE_DIR}/api             # подключение заголовочных файлов модуля API
-    # ${CMAKE_CURRENT_SOURCE_DIR}/button-task     # подключение заголовочных файлов модуля кнопки
-    # ${CMAKE_CURRENT_SOURCE_DIR}/led-task        # подключение заголовочных файлов модуля управления светодиодом
-    # ${CMAKE_CURRENT_SOURCE_DIR}/pi-task         # подключение заголовочных файлов модуля расчета ПИ
-    # ${CMAKE_CURRENT_SOURCE_DIR}/platform        # подключение заголовочных файлов модуля управления железом
 )
 
 target_link_libraries(${PROJECT_NAME}
