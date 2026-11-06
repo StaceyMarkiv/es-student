@@ -16,19 +16,24 @@ typedef struct
     button_state_t button_state;
     uint32_t press_count;
     uint64_t last_press;
-    button_task_callback_t on_press_func;
+    button_task_callback_t on_press_short_func;
+    button_task_callback_t on_press_long_func;
+    bool long_pressed;
 } button_info_t;
 
 static const uint64_t DEBOUNCE_MS = 20 * 1000;
+static const uint64_t LONG_PRESS_MS = 1000 * 1000;
 
 static button_info_t buttons[BUTTONS_COUNT];
 
-void button_task_init(uint32_t button_id, button_task_callback_t on_press)
+void button_task_init(uint32_t button_id, button_task_callback_t on_press_short, button_task_callback_t on_press_long)
 {
     buttons[button_id].button_state = RELEASED;
     buttons[button_id].press_count = 0;
     buttons[button_id].last_press = 0;
-    buttons[button_id].on_press_func = on_press;
+    buttons[button_id].on_press_short_func = on_press_short;
+    buttons[button_id].on_press_long_func = on_press_long;
+    buttons[button_id].long_pressed = false;
 }
 
 void button_task_handle(void)
@@ -48,23 +53,26 @@ void button_task_handle(void)
             {
                 buttons[button_id].last_press = now_us;
                 buttons[button_id].button_state = PRESSING;
+                buttons[button_id].long_pressed = false;
             }
             break;
         case PRESSING:
             if (!button_pressed)
             {
                 buttons[button_id].button_state = RELEASED;
+                buttons[button_id].long_pressed = false;
                 break;
             }
 
             if (now_us - buttons[button_id].last_press >= DEBOUNCE_MS)
             {
-                // при переходе в «нажата» увеличиваем счётчик и вызываем on_press_func()
+                // перейти в «нажата», запомнить время нажатия; если у кнопки нет долгого действия, сообщить о нажатии
                 buttons[button_id].button_state = PRESSSED;
-                buttons[button_id].press_count++;
-                if (buttons[button_id].on_press_func != NULL)
+                if (buttons[button_id].on_press_long_func == NULL && buttons[button_id].on_press_short_func != NULL)
                 {
-                    buttons[button_id].on_press_func();
+                    buttons[button_id].last_press = now_us;
+                    buttons[button_id].press_count++;
+                    buttons[button_id].on_press_short_func();
                 }
             }
             break;
@@ -73,6 +81,18 @@ void button_task_handle(void)
             {
                 buttons[button_id].last_press = now_us;
                 buttons[button_id].button_state = RELEASING;
+                break;
+            }
+
+            if (now_us - buttons[button_id].last_press >= LONG_PRESS_MS)
+            {
+                // сообщить о долгом нажатии, если о нём ещё не сообщали
+                if (buttons[button_id].long_pressed == false && buttons[button_id].on_press_long_func != NULL)
+                {
+                    buttons[button_id].last_press = now_us;
+                    buttons[button_id].long_pressed = true;
+                    buttons[button_id].on_press_long_func();
+                }
             }
             break;
         case RELEASING:
@@ -82,9 +102,17 @@ void button_task_handle(void)
                 break;
             }
 
+            // перейти в «отпущена»; если у кнопки есть долгое действие, а о долгом нажатии не сообщали, сообщить о коротком
             if (now_us - buttons[button_id].last_press >= DEBOUNCE_MS)
             {
                 buttons[button_id].button_state = RELEASED;
+
+                if (buttons[button_id].on_press_long_func != NULL && buttons[button_id].on_press_short_func != NULL && buttons[button_id].long_pressed == false)
+                {
+                    buttons[button_id].last_press = now_us;
+                    buttons[button_id].press_count++;
+                    buttons[button_id].on_press_short_func();
+                }
             }
             break;
         }
