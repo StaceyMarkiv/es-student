@@ -236,6 +236,12 @@ static void cmd_get_voltage(const command_t *command)
     printf("voltage: %.3f V\n", platform_voltage_read());
 }
 
+static void cmd_get_temp(const command_t *command)
+{
+    // температура кристалла, ответ temp: <температура> C
+    printf("temp: %.1f C\n", platform_temp_read());
+}
+
 const api_command_t api_commands[] = {
     {"info", "device passport", cmd_info},
     {"uptime", "time since reset", cmd_uptime},
@@ -249,6 +255,6 @@ const api_command_t api_commands[] = {
     {"profiling", "show all stopwatches", cmd_profiling},
     {"profiling_reset", "reset all stopwatches", cmd_profiling_reset},
     {"get_voltage", "voltage on GP26, ADC input 0", cmd_get_voltage},
-};
+    {"get_temp", "chip temperature, degrees Celsius", cmd_get_temp}};
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);

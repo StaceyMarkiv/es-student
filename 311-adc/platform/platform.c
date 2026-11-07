@@ -8,6 +8,9 @@
 #define ADC_PIN 26
 #define ADC_CHANNEL 0
 
+// встроенный датчик температуры — канал 4
+#define ADC_TEMP_CHANNEL 4
+
 // опорное напряжение АЦП на плате Pico и число уровней 12-разрядного кода
 #define ADC_VREF_V 3.3f
 #define ADC_LEVELS 4096
@@ -29,8 +32,12 @@ void platform_init(void)
     gpio_set_dir(BUTTON_PIN, GPIO_IN);
     gpio_pull_up(BUTTON_PIN);
 
+    // запуск АЦП
     adc_init();
     adc_gpio_init(ADC_PIN);
+
+    // включаем питание датчика внутренней температуры
+    adc_set_temp_sensor_enabled(true);
 }
 
 void platform_led_set(bool on)
@@ -53,4 +60,16 @@ float platform_voltage_read(void)
     // функция, которая снимает один отсчёт и переводит его в вольты
     adc_select_input(ADC_CHANNEL);
     return adc_read() * ADC_VREF_V / ADC_LEVELS;
+}
+
+float platform_temp_read(void)
+{
+    // выбрать канал датчика
+    adc_select_input(ADC_TEMP_CHANNEL);
+
+    // снять отсчёт и перевести код в вольты
+    float ch_volt = adc_read() * ADC_VREF_V / ADC_LEVELS;
+
+    // перевести вольты в градусы по формуле
+    return (27 - (ch_volt - 0.706) / 0.001721);
 }
