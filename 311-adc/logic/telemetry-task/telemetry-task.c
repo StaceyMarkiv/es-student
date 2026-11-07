@@ -21,23 +21,20 @@ void telemetry_task_init(telemetry_task_callback_t on_record)
 
 void telemetry_task_handle(void)
 {
-    uint64_t now_us = systime_us();
-
     switch (telemetry_state)
     {
     case TELEMETRY_STATE_RUN:
-        if (now_us - last_record_us >= (work_period * 1000))
+        if (systime_period_elapsed(&last_record_us, work_period * 1000))
         {
             memset(&telemetry_record, 0, sizeof(telemetry_record)); // обнуление всех полей структуры
 
-            telemetry_record.time_us = now_us;
+            telemetry_record.time_us = systime_us();
             telemetry_record.voltage_v = platform_voltage_read();
             telemetry_record.temp_c = platform_temp_read();
 
             if (on_record_func != NULL)
             {
                 on_record_func(&telemetry_record);
-                last_record_us = now_us;
             }
         }
         break;
