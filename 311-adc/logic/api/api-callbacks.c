@@ -9,10 +9,14 @@
 #include "led-task/led-task.h"
 #include "pi-task/pi-task.h"
 #include "platform/platform.h"
+#include "telemetry-task/telemetry-task.h"
 
 #include "device/device.h"
 #include "profiling/profiling.h"
 #include "systime/systime.h"
+
+// период телеметрии по умолчанию
+#define TELEMETRY_DEFAULT_PERIOD_MS 100
 
 // прикидка: за член ряда 4 операции с double, 175 + 110 + 190 + 110 = 585 тактов;
 // 1 000 000 членов по 585 тактов при 125 МГц — около 4,7 с
@@ -242,6 +246,55 @@ static void cmd_get_temp(const command_t *command)
     printf("temp: %.1f C\n", platform_temp_read());
 }
 
+void api_print_telemetry(const telemetry_record_t *record)
+{
+    // печатает запись телеметрии строкой tm: <время, мкс> <напряжение, В> <температура, °C>
+    printf("tm: %llu %.3f %0.1f\n", record->time_us, record->voltage_v, record->temp_c);
+}
+
+static void cmd_tm_start(const command_t *command)
+{
+    uint32_t print_period;
+    bool isNumber = true;
+    if (command->argc == 1)
+        print_period = TELEMETRY_DEFAULT_PERIOD_MS;
+    else if (command->argc == 2)
+        isNumber = parse_u32(command->argv[0], &print_period);
+    else
+        isNumber = false;
+
+    if (isNumber)
+    {
+        if (print_period > 0)
+        {
+            bool telemetry_print_started = telemetry_task_start(print_period);
+
+            if (telemetry_print_started)
+            {
+                printf("telemetry: started, period %u ms\n", (unsigned)print_period);
+            }
+            else
+            {
+                printf("error: period_ms must be at least 10\n");
+            }
+        }
+        else
+        {
+            printf("error: period_ms must be greater than 0\n");
+        }
+    }
+    else
+    {
+        printf("error: usage tm_start [<period_ms>]\n");
+    }
+}
+
+static void cmd_tm_stop(const command_t *command)
+{
+    telemetry_task_stop();
+    printf("telemetry: stopped\n");
+}
+
 const api_command_t api_commands[] = {
     {"info", "device passport", cmd_info},
     {"uptime", "time since reset", cmd_uptime},
@@ -255,6 +308,9 @@ const api_command_t api_commands[] = {
     {"profiling", "show all stopwatches", cmd_profiling},
     {"profiling_reset", "reset all stopwatches", cmd_profiling_reset},
     {"get_voltage", "voltage on GP26, ADC input 0", cmd_get_voltage},
-    {"get_temp", "chip temperature, degrees Celsius", cmd_get_temp}};
+    {"get_temp", "chip temperature, degrees Celsius", cmd_get_temp},
+    {"tm_start", "start reading telemetry", cmd_tm_start},
+    {"tm_stop", "stop reading telemetry", cmd_tm_stop},
+};
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
