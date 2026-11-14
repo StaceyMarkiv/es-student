@@ -4,6 +4,8 @@
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
 
+// вывод, через резистор заряжающий конденсатор RC-цепи
+#define CHARGE_PIN 22
 // вход АЦП: вывод GP26, канал 0
 #define ADC_PIN 26
 #define ADC_CHANNEL 0
@@ -31,6 +33,11 @@ void platform_init(void)
     gpio_init(BUTTON_PIN);
     gpio_set_dir(BUTTON_PIN, GPIO_IN);
     gpio_pull_up(BUTTON_PIN);
+
+    // настраиваем вывод, через резистор заряжающий конденсатор RC-цепи
+    gpio_init(CHARGE_PIN);
+    gpio_set_dir(CHARGE_PIN, GPIO_OUT);
+    platform_charge_set(true);
 
     // запуск АЦП
     adc_init();
@@ -72,4 +79,9 @@ float platform_temp_read(void)
 
     // перевести вольты в градусы по формуле
     return (27 - (ch_volt - 0.706) / 0.001721);
+}
+
+void platform_charge_set(bool on)
+{
+    gpio_put(CHARGE_PIN, on);
 }
