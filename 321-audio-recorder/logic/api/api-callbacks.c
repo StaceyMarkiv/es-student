@@ -339,7 +339,7 @@ static void cmd_timer_blink_start(const command_t *command)
     }
     else
     {
-        printf("error: usage timer_blink <period_ms>\n");
+        printf("error: usage timer_blink_start <period_ms>\n");
     }
 }
 
