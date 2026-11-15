@@ -236,14 +236,28 @@ static void cmd_profiling_reset(const command_t *command)
 
 static void cmd_get_voltage(const command_t *command)
 {
-    // напряжение на GP26 у platform, ответ voltage: <напряжение> V
-    printf("voltage: %.3f V\n", platform_voltage_read());
+    if (!platform_adc_busy())
+    {
+        // напряжение на GP26 у platform, ответ voltage: <напряжение> V
+        printf("voltage: %.3f V\n", platform_voltage_read());
+    }
+    else
+    {
+        printf("error: adc busy");
+    }
 }
 
 static void cmd_get_temp(const command_t *command)
 {
-    // температура кристалла, ответ temp: <температура> C
-    printf("temp: %.1f C\n", platform_temp_read());
+    if (!platform_adc_busy())
+    {
+        // температура кристалла, ответ temp: <температура> C
+        printf("temp: %.1f C\n", platform_temp_read());
+    }
+    else
+    {
+        printf("error: adc busy");
+    }
 }
 
 void api_print_telemetry(const telemetry_record_t *record)
@@ -254,38 +268,45 @@ void api_print_telemetry(const telemetry_record_t *record)
 
 static void cmd_tm_start(const command_t *command)
 {
-    uint32_t print_period;
-    bool isNumber = true;
-    if (command->argc == 1)
-        print_period = TELEMETRY_DEFAULT_PERIOD_MS;
-    else if (command->argc == 2)
-        isNumber = parse_u32(command->argv[0], &print_period);
-    else
-        isNumber = false;
-
-    if (isNumber)
+    if (!platform_adc_busy())
     {
-        if (print_period > 0)
-        {
-            bool telemetry_print_started = telemetry_task_start(print_period);
+        uint32_t print_period;
+        bool isNumber = true;
+        if (command->argc == 1)
+            print_period = TELEMETRY_DEFAULT_PERIOD_MS;
+        else if (command->argc == 2)
+            isNumber = parse_u32(command->argv[0], &print_period);
+        else
+            isNumber = false;
 
-            if (telemetry_print_started)
+        if (isNumber)
+        {
+            if (print_period > 0)
             {
-                printf("telemetry: started, period %u ms\n", (unsigned)print_period);
+                bool telemetry_print_started = telemetry_task_start(print_period);
+
+                if (telemetry_print_started)
+                {
+                    printf("telemetry: started, period %u ms\n", (unsigned)print_period);
+                }
+                else
+                {
+                    printf("error: period_ms must be at least 10\n");
+                }
             }
             else
             {
-                printf("error: period_ms must be at least 10\n");
+                printf("error: period_ms must be greater than 0\n");
             }
         }
         else
         {
-            printf("error: period_ms must be greater than 0\n");
+            printf("error: usage tm_start [<period_ms>]\n");
         }
     }
     else
     {
-        printf("error: usage tm_start [<period_ms>]\n");
+        printf("error: adc busy");
     }
 }
 
@@ -349,6 +370,89 @@ static void cmd_timer_blink_stop(const command_t *command)
     printf("timer_blink: stopped, %u toggles\n", (unsigned)toggles);
 }
 
+static void cmd_cap_start(const command_t *command)
+{
+    uint32_t N;
+    uint32_t period;
+    bool isNumber_N = true;
+    bool isNumber_period = true;
+
+    if (command->argc == 3)
+    {
+        isNumber_N = parse_u32(command->argv[0], &N);
+        isNumber_period = parse_u32(command->argv[1], &period);
+    }
+    else
+    {
+        isNumber_N = false;
+        isNumber_period = false;
+    }
+
+    if (isNumber_N == true && isNumber_period == true)
+    {
+        if (N == 0 || N > PLATFORM_CAPTURE_MAX || period < 10)
+        {
+            printf("error: N must be 1..2000, period_us at least 10\n");
+        }
+        else
+        {
+            if (telemetry_task_get_state() == TELEMETRY_STATE_RUN || platform_adc_busy())
+            {
+                printf("error: adc busy\n");
+            }
+            else
+            {
+                bool capture_started = platform_capture_start(N, period);
+                if (!capture_started)
+                    printf("error: adc busy\n");
+                else
+                    printf("capture: started, %u samples, period %u us\n", (unsigned)N, (unsigned)period);
+            }
+        }
+    }
+    else
+    {
+        // аргументов не два или не числа
+        printf("error: usage cap_start <N> <period_us>\n");
+    }
+}
+
+static void cmd_cap_dump(const command_t *command)
+{
+    if (!platform_capture_done())
+    {
+        printf("error: no capture\n");
+    }
+    else
+    {
+        platform_capture_t capture;
+        platform_capture_get(&capture);
+
+        printf("capture: %u samples, period %u us, interval %u..%u us, handler %.1f %%\n",
+               (unsigned)capture.count,
+               (unsigned)capture.period_us,
+               (unsigned)capture.min_interval_us,
+               (unsigned)capture.max_interval_us,
+               (float)capture.handler_percent);
+
+        printf("cap: ");
+
+        uint16_t counter = 0;
+        for (uint32_t i = 1; i < capture.count; i++)
+        {
+            printf("%d ", capture.samples[i]);
+            if (counter == 16)
+            {
+                printf("\n");
+                counter = 0;
+                continue;
+            }
+            counter++;
+        }
+        printf("\n");
+    }
+}
+
 const api_command_t api_commands[] = {
     {"info", "device passport", cmd_info},
     {"uptime", "time since reset", cmd_uptime},
@@ -369,6 +473,8 @@ const api_command_t api_commands[] = {
     {"charge_off", "rc-charge off", cmd_charge_off},
     {"timer_blink_start", "blink led by timer: timer_blink_start <period_ms>", cmd_timer_blink_start},
     {"timer_blink_stop", "stop timer blink, number of toggles", cmd_timer_blink_stop},
+    {"cap_start", "start capture", cmd_cap_start},
+    {"cap_dump", "get capture dump", cmd_cap_dump},
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
