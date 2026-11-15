@@ -438,10 +438,10 @@ static void cmd_cap_dump(const command_t *command)
         printf("cap: ");
 
         uint16_t counter = 0;
-        for (uint32_t i = 1; i < capture.count; i++)
+        for (uint32_t i = 0; i < capture.count; i++)
         {
             printf("%d ", capture.samples[i]);
-            if (counter == 16)
+            if (counter == 15)
             {
                 printf("\n");
                 counter = 0;
