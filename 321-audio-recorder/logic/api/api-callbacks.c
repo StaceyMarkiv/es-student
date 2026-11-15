@@ -435,12 +435,16 @@ static void cmd_cap_dump(const command_t *command)
                (unsigned)capture.max_interval_us,
                (float)capture.handler_percent);
 
-        printf("cap: ");
-
         uint16_t counter = 0;
         for (uint32_t i = 0; i < capture.count; i++)
         {
+            if (counter == 0)
+            {
+                printf("cap: ");
+            }
+
             printf("%d ", capture.samples[i]);
+
             if (counter == 15)
             {
                 printf("\n");
