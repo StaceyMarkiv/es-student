@@ -23,13 +23,15 @@ target_include_directories(platform PUBLIC
 target_link_libraries(platform PRIVATE
     pico_stdlib
     hardware_adc
+    hardware_dma
 )
 
 # логика прибора: задачи и команды, без SDK
 add_library(logic STATIC
-    # исходники api, led-task, button-task и pi-task
+    # исходники api, led-task, block-task, button-task, telemetry-task и pi-task
     logic/api/api.c
     logic/api/api-callbacks.c
+    logic/block-task/block-task.c
     logic/button-task/button-task.c
     logic/led-task/led-task.c
     logic/pi-task/pi-task.c

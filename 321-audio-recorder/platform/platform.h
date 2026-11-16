@@ -3,6 +3,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// максимальное количество отсчётов GP26 для захвата по будильнику
+#define PLATFORM_CAPTURE_MAX 2000
+// частота отсчётов АЦП в блоке и потоке
+#define PLATFORM_SAMPLE_RATE_HZ 44100
+// максимальный размер блока отсчётов GP26 через DMA
+#define PLATFORM_BLOCK_MAX 8192
+
 // запускает стандартный ввод-вывод и настраивает выводы
 void platform_init(void);
 
@@ -32,7 +39,6 @@ bool platform_adc_busy(void);
 
 // захват count отсчётов GP26 по будильнику с периодом period_us;
 // false — АЦП занят или count больше PLATFORM_CAPTURE_MAX
-#define PLATFORM_CAPTURE_MAX 2000
 bool platform_capture_start(uint32_t count, uint32_t period_us);
 bool platform_capture_done(void);
 
@@ -49,3 +55,12 @@ typedef struct
 } platform_capture_t;
 
 void platform_capture_get(platform_capture_t *capture);
+
+// блок count отсчётов GP26 через DMA, о конце сообщает прерывание DMA;
+// false — АЦП занят или count больше PLATFORM_BLOCK_MAX
+bool platform_block_start(uint32_t count);
+bool platform_block_done(void);
+const uint16_t *platform_block_samples(void);
+
+// время захвата блока, от запуска АЦП до последнего отсчёта
+uint32_t platform_block_time_us(void);

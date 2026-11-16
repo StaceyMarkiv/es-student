@@ -4,6 +4,7 @@
 
 #include "api/api.h"
 #include "button-task/button-task.h"
+#include "block-task/block-task.h"
 #include "led-task/led-task.h"
 #include "pi-task/pi-task.h"
 #include "platform/platform.h"
@@ -20,6 +21,7 @@ enum stopwatch_t
     STOPWATCH_BUTTON,
     STOPWATCH_PI,
     STOPWATCH_TELEMETRY,
+    STOPWATCH_BLOCK_TASK,
 };
 
 int main()
@@ -33,6 +35,7 @@ int main()
     profiling_stopwatch_init(STOPWATCH_BUTTON, "button");
     profiling_stopwatch_init(STOPWATCH_PI, "pi");
     profiling_stopwatch_init(STOPWATCH_TELEMETRY, "telemetry");
+    profiling_stopwatch_init(STOPWATCH_BLOCK_TASK, "block_task");
 
     stdio_text_protocol_init();
     led_task_init();
@@ -58,6 +61,10 @@ int main()
         profiling_start(STOPWATCH_TELEMETRY);
         telemetry_task_handle();
         profiling_stop(STOPWATCH_TELEMETRY);
+
+        profiling_start(STOPWATCH_BLOCK_TASK);
+        block_task_handle();
+        profiling_stop(STOPWATCH_BLOCK_TASK);
 
         profiling_start(STOPWATCH_COMMAND);
         // принятая строка становится командой, команда — действием прибора

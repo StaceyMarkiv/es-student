@@ -17,7 +17,7 @@ void profiling_stop(uint32_t id);
 #endif
 
 // число секундомеров
-#define STOPWATCH_QTY 6
+#define STOPWATCH_QTY 7
 
 typedef struct
 {
