@@ -5,7 +5,6 @@
 #include "hardware/adc.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
-// #include "hardware/clocks.h"
 #include "hardware/pwm.h"
 
 // вывод, через резистор заряжающий конденсатор RC-цепи
@@ -154,7 +153,7 @@ void platform_init(void)
     // GP20 отдан блоку ШИМ
     gpio_set_function(TONE_PIN, GPIO_FUNC_PWM);
     slice = pwm_gpio_to_slice_num(TONE_PIN);
-    pwm_set_clkdiv(slice, TONE_COUNT_HZ);
+    pwm_set_clkdiv(slice, (float)TONE_COUNT_HZ);
     pwm_set_gpio_level(TONE_PIN, 0);
     pwm_set_enabled(slice, true);
 }
@@ -486,7 +485,7 @@ bool platform_tone_set(uint32_t freq_hz)
 {
     if (freq_hz == 0)
     {
-        // pwm_set_wrap(slice, 0);
+        pwm_set_wrap(slice, 0);
         pwm_set_gpio_level(TONE_PIN, 0);
         return true;
     }
