@@ -28,13 +28,14 @@ target_link_libraries(platform PRIVATE
 
 # логика прибора: задачи и команды, без SDK
 add_library(logic STATIC
-    # исходники api, led-task, block-task, button-task, telemetry-task и pi-task
+    # исходники api, block-task, button-task, led-task, pi-task, stream-task и telemetry-task
     logic/api/api.c
     logic/api/api-callbacks.c
     logic/block-task/block-task.c
     logic/button-task/button-task.c
     logic/led-task/led-task.c
     logic/pi-task/pi-task.c
+    logic/stream-task/stream-task.c
     logic/telemetry-task/telemetry-task.c
 )
 # путь к заголовкам — папка logic

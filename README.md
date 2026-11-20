@@ -45,3 +45,4 @@ Repo for studying of embedded systems
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-3-2-1.yml/badge.svg)
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-3-2-2.yml/badge.svg)
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-3-2-3.yml/badge.svg)
+![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-3-2-4.yml/badge.svg)

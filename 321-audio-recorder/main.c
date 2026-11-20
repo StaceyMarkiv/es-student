@@ -22,6 +22,7 @@ enum stopwatch_t
     STOPWATCH_PI,
     STOPWATCH_TELEMETRY,
     STOPWATCH_BLOCK_TASK,
+    STOPWATCH_STREAM,
 };
 
 int main()
@@ -36,11 +37,13 @@ int main()
     profiling_stopwatch_init(STOPWATCH_PI, "pi");
     profiling_stopwatch_init(STOPWATCH_TELEMETRY, "telemetry");
     profiling_stopwatch_init(STOPWATCH_BLOCK_TASK, "block_task");
+    profiling_stopwatch_init(STOPWATCH_STREAM, "stream");
 
     stdio_text_protocol_init();
     led_task_init();
     button_task_init(led_task_next_state);
     telemetry_task_init(api_print_telemetry);
+    stream_task_init(api_send_frame);
 
     while (1)
     {
@@ -65,6 +68,10 @@ int main()
         profiling_start(STOPWATCH_BLOCK_TASK);
         block_task_handle();
         profiling_stop(STOPWATCH_BLOCK_TASK);
+
+        profiling_start(STOPWATCH_STREAM);
+        stream_task_handle();
+        profiling_stop(STOPWATCH_STREAM);
 
         profiling_start(STOPWATCH_COMMAND);
         // принятая строка становится командой, команда — действием прибора

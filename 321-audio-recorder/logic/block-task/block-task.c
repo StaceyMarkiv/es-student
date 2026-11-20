@@ -5,7 +5,6 @@
 
 static volatile uint32_t block_count;
 static volatile block_task_callback_t on_block_func;
-static volatile uint16_t tmp = 0;
 
 bool block_task_start(uint32_t count, block_task_callback_t on_block)
 {
@@ -18,8 +17,7 @@ bool block_task_start(uint32_t count, block_task_callback_t on_block)
     on_block_func = on_block;
 
     // platform не начал захват — false;
-    bool block_task_started = platform_block_start(block_count);
-    return block_task_started;
+    return platform_block_start(block_count);
 }
 
 void block_task_handle(void)

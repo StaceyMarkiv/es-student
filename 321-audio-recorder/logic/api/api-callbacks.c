@@ -10,6 +10,7 @@
 #include "led-task/led-task.h"
 #include "pi-task/pi-task.h"
 #include "platform/platform.h"
+#include "stream-task/stream-task.h"
 #include "telemetry-task/telemetry-task.h"
 
 #include "device/device.h"
@@ -18,6 +19,9 @@
 
 // период телеметрии по умолчанию
 #define TELEMETRY_DEFAULT_PERIOD_MS 100
+
+// период индикатора записи во время потока
+#define STREAM_BLINK_PERIOD_MS 250
 
 // прикидка: за член ряда 4 операции с double, 175 + 110 + 190 + 110 = 585 тактов;
 // 1 000 000 членов по 585 тактов при 125 МГц — около 4,7 с
@@ -527,6 +531,74 @@ static void cmd_dma_cap(const command_t *command)
     }
 }
 
+void api_send_frame(const stream_header_t *header, const uint8_t *data, uint32_t bytes)
+{
+    // байты заголовка и отсчётов как они лежат в памяти
+    platform_write(header, sizeof(*header));
+    platform_write(data, bytes);
+}
+
+static void cmd_stream_start(const command_t *command)
+{
+    if (!platform_adc_busy())
+    {
+        uint32_t frame_bits;
+        bool isNumber = true;
+        if (command->argc == 1)
+            frame_bits = 16;
+        else if (command->argc == 2)
+            isNumber = parse_u32(command->argv[0], &frame_bits);
+        else
+            isNumber = false;
+
+        if (isNumber && (frame_bits == 8 || frame_bits == 16))
+        {
+            if (telemetry_task_get_state() == TELEMETRY_STATE_RUN || platform_adc_busy())
+            {
+                printf("error: adc busy\n");
+            }
+            else
+            {
+                bool stream_started = stream_task_start(frame_bits);
+                if (!stream_started)
+                {
+                    printf("error: adc busy\n");
+                }
+                else
+                {
+                    printf("stream: started, 44100 Hz, %u bit\n", (unsigned)frame_bits);
+
+                    platform_blink_start(STREAM_BLINK_PERIOD_MS);
+                    led_task_set_state(LED_STATE_OFF);
+                }
+            }
+        }
+        else
+        {
+            printf("error: usage stream_start [8|16]\n");
+        }
+    }
+    else
+    {
+        printf("error: adc busy\n");
+    }
+}
+
+static void cmd_stream_stop(const command_t *command)
+{
+    if (stream_task_get_state() == STREAM_STATE_RUN)
+    {
+        // если поток идёт — остановить задачу и мигание;
+        stream_task_stop();
+        platform_blink_stop();
+
+        printf("stream: stopped, %u frames, %u samples, %u overruns\n",
+               (unsigned)stream_task_get_frames(),
+               (unsigned)stream_task_get_samples(),
+               (unsigned)stream_task_get_overruns());
+    }
+}
+
 const api_command_t api_commands[] = {
     {"info", "device passport", cmd_info},
     {"uptime", "time since reset", cmd_uptime},
@@ -550,6 +622,8 @@ const api_command_t api_commands[] = {
     {"cap_start", "start capture", cmd_cap_start},
     {"cap_dump", "get capture dump", cmd_cap_dump},
     {"dma_cap", "dma capture", cmd_dma_cap},
+    {"stream_start", "start stream", cmd_stream_start},
+    {"stream_stop", "stop stream", cmd_stream_stop},
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
