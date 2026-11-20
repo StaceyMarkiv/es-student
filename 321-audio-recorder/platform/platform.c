@@ -5,6 +5,8 @@
 #include "hardware/adc.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
+// #include "hardware/clocks.h"
+#include "hardware/pwm.h"
 
 // вывод, через резистор заряжающий конденсатор RC-цепи
 #define CHARGE_PIN 22
@@ -21,6 +23,12 @@
 
 // частота clk_adc, от неё делитель отсчитывает шаг
 #define ADC_CLOCK_HZ 48000000.0f
+
+// вывод тона, его меандр делает модуль ШИМ
+#define TONE_PIN 20
+
+// счёт ШИМ тона: делитель приводит clk_sys к 1 МГц, счётчик считает микросекунды
+#define TONE_COUNT_HZ 1000000
 
 static const uint LED_PIN = 16;
 static const uint BUTTON_PIN = 15;
@@ -61,6 +69,8 @@ static volatile bool stream_ready[2];
 static volatile uint32_t stream_overruns;
 static uint32_t stream_samples;
 static uint32_t stream_next;
+
+static uint slice;
 
 // АЦП обратно в режим отсчётов по команде
 static void adc_one_shot(void)
@@ -140,6 +150,13 @@ void platform_init(void)
     stream_channels[1] = dma_claim_unused_channel(true);
     irq_set_exclusive_handler(DMA_IRQ_0, on_stream_buffer);
     irq_set_enabled(DMA_IRQ_0, true);
+
+    // GP20 отдан блоку ШИМ
+    gpio_set_function(TONE_PIN, GPIO_FUNC_PWM);
+    slice = pwm_gpio_to_slice_num(TONE_PIN);
+    pwm_set_clkdiv(slice, TONE_COUNT_HZ);
+    pwm_set_gpio_level(TONE_PIN, 0);
+    pwm_set_enabled(slice, true);
 }
 
 void platform_led_set(bool on)
@@ -459,4 +476,32 @@ void platform_stream_release(void)
 uint32_t platform_stream_overruns(void)
 {
     return stream_overruns;
+}
+
+// platform_tone_set(): 0 — порог 0, на выводе ноль
+//     вне 20..20000 Гц — false
+//     период в микросекундах 1 000 000 / freq_hz, wrap — период минус 1,
+//     порог — половина периода
+bool platform_tone_set(uint32_t freq_hz)
+{
+    if (freq_hz == 0)
+    {
+        // pwm_set_wrap(slice, 0);
+        pwm_set_gpio_level(TONE_PIN, 0);
+        return true;
+    }
+    else if (freq_hz < 20 || freq_hz > 20000)
+    {
+        return false;
+    }
+    else
+    {
+        uint32_t period = TONE_COUNT_HZ / freq_hz;
+
+        pwm_set_wrap(slice, period - 1);
+        pwm_set_gpio_level(TONE_PIN, period / 2);
+        pwm_set_enabled(slice, true);
+
+        return true;
+    }
 }
