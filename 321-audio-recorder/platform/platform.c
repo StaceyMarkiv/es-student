@@ -7,8 +7,7 @@
 #include "hardware/irq.h"
 #include "hardware/pwm.h"
 #include "hardware/clocks.h"
-
-#include <stdio.h>
+#include "hardware/watchdog.h"
 
 // вывод, через резистор заряжающий конденсатор RC-цепи
 #define CHARGE_PIN 22
@@ -31,6 +30,9 @@
 
 // счёт ШИМ тона: делитель приводит clk_sys к 1 МГц, счётчик считает микросекунды
 #define TONE_COUNT_HZ 1000000
+
+// наибольший таймаут сторожевого таймера RP2040 (RP2040-E1)
+#define WATCHDOG_MAX_MS 8388
 
 static const uint LED_PIN = 16;
 static const uint BUTTON_PIN = 15;
@@ -73,6 +75,9 @@ static uint32_t stream_samples;
 static uint32_t stream_next;
 
 static uint slice;
+
+static bool watchdog_reset;
+static uint32_t watchdog_restarts;
 
 // АЦП обратно в режим отсчётов по команде
 static void adc_one_shot(void)
@@ -117,6 +122,19 @@ static void on_stream_buffer(void)
 
 void platform_init(void)
 {
+    // причина прошлого сброса; счётчик сбросов подряд хранит scratch-регистр 0,
+    // его не стирает сброс по сторожевому таймеру
+    watchdog_reset = watchdog_enable_caused_reboot();
+    if (watchdog_reset)
+    {
+        watchdog_hw->scratch[0]++;
+    }
+    else
+    {
+        watchdog_hw->scratch[0] = 0;
+    }
+    watchdog_restarts = watchdog_hw->scratch[0];
+
     // обязательно для работы com-порта
     stdio_init_all();
 
@@ -480,23 +498,23 @@ uint32_t platform_stream_overruns(void)
     return stream_overruns;
 }
 
-// platform_tone_set(): 0 — порог 0, на выводе ноль
-//     вне 20..20000 Гц — false
-//     период в микросекундах 1 000 000 / freq_hz, wrap — период минус 1,
-//     порог — половина периода
 bool platform_tone_set(uint32_t freq_hz)
 {
     if (freq_hz == 0)
     {
+        // порог 0, на выводе ноль
         pwm_set_gpio_level(TONE_PIN, 0);
         return true;
     }
     else if (freq_hz < 20 || freq_hz > 20000)
     {
+        // вне 20..20000 Гц — false
         return false;
     }
     else
     {
+        // период в микросекундах 1 000 000 / freq_hz, wrap — период минус 1,
+        // порог — половина периода
         uint16_t period = TONE_COUNT_HZ / freq_hz;
 
         pwm_set_wrap(slice, period - 1);
@@ -505,4 +523,27 @@ bool platform_tone_set(uint32_t freq_hz)
 
         return true;
     }
+}
+
+bool platform_watchdog_enable(uint32_t timeout_ms)
+{
+    if (timeout_ms == 0 || timeout_ms > WATCHDOG_MAX_MS)
+    {
+        return false;
+    }
+
+    // true — не считать, пока ядро остановлено отладчиком
+    watchdog_enable(timeout_ms, true);
+    return true;
+}
+
+void platform_watchdog_feed(void)
+{
+    watchdog_update();
+}
+
+bool platform_watchdog_caused_reset(uint32_t *restarts)
+{
+    *restarts = watchdog_restarts;
+    return watchdog_reset;
 }

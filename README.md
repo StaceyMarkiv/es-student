@@ -2,6 +2,9 @@
 
 Repo for studying of embedded systems
 
+Таймаут для сторожевого таймера - 3,5 мс. Это в 2 раза дольше самой худшей итерации цикла и в 3 раза меньше времени заполнения буфера.
+Так худшая итерация цикла точно успеет завершиться, а потери данных в буфере будут не слишком большими.
+
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-1-1-1.yml/badge.svg)
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-1-1-2.yml/badge.svg)
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-1-1-3.yml/badge.svg)
@@ -47,3 +50,4 @@ Repo for studying of embedded systems
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-3-2-3.yml/badge.svg)
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-3-2-4.yml/badge.svg)
 ![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-3-2-5.yml/badge.svg)
+![](https://github.com/StaceyMarkiv/es-student/actions/workflows/check-3-2-6.yml/badge.svg)

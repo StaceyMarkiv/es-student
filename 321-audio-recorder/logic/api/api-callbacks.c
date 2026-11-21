@@ -599,9 +599,6 @@ static void cmd_stream_stop(const command_t *command)
     }
 }
 
-// cmd_generate_tone(): не один аргумент или не число — error: usage generate_tone <Hz>
-//     platform_tone_set() вернула false — error: Hz must be 0 or 20..20000
-//     0 — tone: off, иначе tone: <Hz> Hz
 static void cmd_generate_tone(const command_t *command)
 {
     uint32_t generate_tone;
@@ -637,6 +634,51 @@ static void cmd_generate_tone(const command_t *command)
     }
 }
 
+static void cmd_hang(const command_t *command)
+{
+    printf("hang: superloop stopped\n");
+
+    // суперцикл больше не идёт, прерывания приходят как прежде
+    while (1)
+    {
+    }
+}
+
+static void cmd_wdt_enable(const command_t *command)
+{
+    uint32_t timeout_ms;
+    bool isNumber = true;
+
+    if (command->argc == 2)
+        isNumber = parse_u32(command->argv[0], &timeout_ms);
+    else
+        isNumber = false;
+
+    if (isNumber)
+    {
+        bool timeout_enabled = platform_watchdog_enable(timeout_ms);
+        if (!timeout_enabled)
+        {
+            printf("error: timeout_ms must be 1..8388\n");
+        }
+        else
+        {
+            printf("wdt: enabled, timeout %u ms\n", (unsigned)timeout_ms);
+        }
+    }
+    else
+    {
+        printf("error: usage wdt_enable <timeout_ms>\n");
+    }
+}
+
+static void cmd_reset_reason(const command_t *command)
+{
+    uint32_t restarts;
+    bool is_watchdog_reset = platform_watchdog_caused_reset(&restarts);
+    printf("reset: %s, restarts %u\n", is_watchdog_reset ? "watchdog" : "other", (unsigned)restarts);
+}
+
 const api_command_t api_commands[] = {
     {"info", "device passport", cmd_info},
     {"uptime", "time since reset", cmd_uptime},
@@ -663,6 +705,9 @@ const api_command_t api_commands[] = {
     {"stream_start", "start stream", cmd_stream_start},
     {"stream_stop", "stop stream", cmd_stream_stop},
     {"generate_tone", "generate tone", cmd_generate_tone},
+    {"hang", "stop superloop forever", cmd_hang},
+    {"wdt_enable", "enabke watchdog timer", cmd_wdt_enable},
+    {"reset_reason", "get reset reason", cmd_reset_reason},
 };
 
 const uint32_t api_command_count = sizeof(api_commands) / sizeof(api_commands[0]);
