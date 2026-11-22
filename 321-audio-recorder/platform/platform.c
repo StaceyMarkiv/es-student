@@ -547,3 +547,9 @@ bool platform_watchdog_caused_reset(uint32_t *restarts)
     *restarts = watchdog_restarts;
     return watchdog_reset;
 }
+
+// platform_adc_volts(): код × опорное напряжение / число уровней
+float platform_adc_volts(float code)
+{
+    return code * ADC_VREF_V / ADC_LEVELS;
+}
