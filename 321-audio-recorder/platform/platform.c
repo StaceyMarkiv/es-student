@@ -353,10 +353,11 @@ void platform_capture_get(platform_capture_t *capture)
 }
 
 // АЦП в непрерывном режиме с шагом 44,1 кГц, буфер АЦП с запросом DMA на каждый отсчёт
-static void adc_free_running(void)
+// bits8 — модуль сам отбрасывает 4 младших разряда
+static void adc_free_running(bool bits8)
 {
     adc_select_input(ADC_CHANNEL);
-    adc_fifo_setup(true, true, 1, false, false);
+    adc_fifo_setup(true, true, 1, false, bits8);
     adc_set_clkdiv(ADC_CLOCK_HZ / PLATFORM_SAMPLE_RATE_HZ - 1);
 }
 
@@ -367,7 +368,7 @@ bool platform_block_start(uint32_t count)
         return false;
     }
 
-    adc_free_running();
+    adc_free_running(false);
 
     // 16-битные передачи из одного адреса в растущий, по запросу АЦП
     dma_channel_config cfg = dma_channel_get_default_config(block_channel);
@@ -404,13 +405,13 @@ uint32_t platform_block_time_us(void)
 
 bool platform_stream_start(uint8_t bits)
 {
-    if (adc_user != ADC_FREE || bits != 16)
+    if (adc_user != ADC_FREE || !(bits == 16 || bits == 8))
     {
         return false;
     }
 
-    stream_samples = PLATFORM_STREAM_BYTES / 2;
-    adc_free_running();
+    stream_samples = (bits == 16) ? PLATFORM_STREAM_BYTES / 2 : PLATFORM_STREAM_BYTES;
+    adc_free_running(bits != 16);
 
     // канал i пишет в буфер i и по окончании запускает другой канал
     for (int i = 0; i < 2; i++)
@@ -419,7 +420,7 @@ bool platform_stream_start(uint8_t bits)
         int next_channel = stream_channels[(i + 1) % 2];
 
         dma_channel_config cfg = dma_channel_get_default_config(stream_channels[i]);
-        channel_config_set_transfer_data_size(&cfg, DMA_SIZE_16);
+        channel_config_set_transfer_data_size(&cfg, (bits == 16) ? DMA_SIZE_16 : DMA_SIZE_8);
         channel_config_set_read_increment(&cfg, false);
         channel_config_set_write_increment(&cfg, true);
         channel_config_set_dreq(&cfg, DREQ_ADC);
